@@ -2,23 +2,30 @@
 @using System.Net.Http.Json
 @using ioComponentsConfigurator.Models;
 
-@inject HttpClient httpClient
-
+<h3>Templates</h3>
 
 <MudDrawerContainer Class="mud-height-full">
 
     <MudDrawer @bind-Open="@openRight" Fixed="false" Anchor="Anchor.Right" Elevation="1" Variant="@DrawerVariant.Persistent" Width="calc((100% - 250px) / 2)">
-        <div>
+        <div style="padding:12px">
             <h2 style="padding:12px">@SelectedTitle</h2>
-            <MudButton OnClick="@SaveNewData" class="d-flex justify-right align-right">Save</MudButton>
+
+            <MudDataGrid T="TemplateProperty" Items="@TemplateProperties" Bordered="true">
+                <Columns>
+                    <Column T="TemplateProperty" Field="Name"  />
+                    <Column T="TemplateProperty" Field="InterfaceType" Title="Type" />
+                </Columns>
+            </MudDataGrid>
+
+            <MudButton OnClick="@SaveNewData" class="d-flex justify-right align-right" style="margin-top:24px" >Ok</MudButton>
         </div>
     </MudDrawer>
 
 
-    <MudDataGrid T="Element" Items="@Elements.Take(4)" RowClick="@RowClicked">
+    <MudDataGrid T="Template" Items="@TemplatesList" RowClick="@RowClicked" Bordered="true">
         <Columns>
-            <Column T="Element" Field="Id" Title="Id" />
-            <Column T="Element" Field="Name" Title="Template name" />
+            <Column T="Template" Field="Id" />
+            <Column T="Template" Field="Name" Title="Template name" />
         </Columns>
     </MudDataGrid>
 
@@ -31,19 +38,36 @@
 {
     public string? SelectedTitle { get; set; }
 
-    private IEnumerable<Element> Elements = new List<Element>();
+    private IEnumerable<Template> TemplatesList = new List<Template>();
 
+    private IEnumerable<TemplateProperty> TemplateProperties = new List<TemplateProperty>();
 
-    protected override async Task OnInitializedAsync()
+    protected override Task OnInitializedAsync()
     {
-        Elements = new List<Element>()
+        TemplatesList = new List<Template>()
         {
-            new Element() { Id = 1, Name = "Bariera tip 1" },
-            new Element() { Id = 2, Name = "Usa" },
-            new Element() { Id = 3, Name = "Bariera tip 2" },
-            new Element() { Id = 4, Name = "Poarta mecanica" }
+            new Template() { 
+                Id = 1, 
+                Name = "Bariera tip 1",
+                Properties = new List<TemplateProperty>()
+                {
+                    new TemplateProperty() { Name = "Senzor bariera" , InterfaceType = ioInterfaceType.DigitalInputChannels }
+                }
+            },
+            new Template() { 
+                Id = 2, 
+                Name = "Usa",
+                Properties = new List<TemplateProperty>()
+                {
+                    new TemplateProperty() { Name = "Contact" , InterfaceType = ioInterfaceType.DigitalInputChannels },
+                    new TemplateProperty() { Name = "Lock" , InterfaceType = ioInterfaceType.RelayChannels }
+                }
+            },
+            new Template() { Id = 3, Name = "Bariera tip 2" },
+            new Template() { Id = 4, Name = "Poarta mecanica" }
         };
-        // Elements = await httpClient.GetFromJsonAsync<List<Element>>("webapi/periodictable");
+
+        return Task.CompletedTask;
     }
 
     bool openRight = false;
@@ -53,11 +77,12 @@
     }
 
     // events
-    void RowClicked(DataGridRowClickEventArgs<Element> args)
+    void RowClicked(DataGridRowClickEventArgs<Template> args)
     {
         // _events.Insert(0, $"Event = RowClick, Index = {args.RowIndex}, Data = {System.Text.Json.JsonSerializer.Serialize(args.Item)}");
 
         SelectedTitle = args.Item.Name;
+        TemplateProperties = args.Item.Properties;
         openRight = true;
     }
 
@@ -65,4 +90,5 @@
     {
         openRight = false;
     }
+
 }

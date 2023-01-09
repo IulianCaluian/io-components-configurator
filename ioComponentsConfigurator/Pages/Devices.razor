@@ -1,0 +1,96 @@
+﻿@page "/devices"
+
+@using System.Net.Http.Json
+@using ioComponentsConfigurator.Models;
+
+<h3>Hardware</h3>
+
+<MudDrawerContainer Class="mud-height-full">
+
+    <MudDrawer @bind-Open="@openRight" Fixed="false" Anchor="Anchor.Right" Elevation="1" Variant="@DrawerVariant.Persistent" Width="calc((100% - 250px) / 2)">
+        <div style="padding:12px">
+            <h2 style="padding:12px">@SelectedTitle</h2>
+
+            <MudDataGrid T="InterfaceSpecs" Items="@SpecsList" Bordered="true">
+                <Columns>
+                    <Column T="InterfaceSpecs" Field="Type" />
+                    <Column T="InterfaceSpecs" Field="Count" Title="Type" />
+                </Columns>
+            </MudDataGrid>
+
+            <MudButton OnClick="@SaveNewData" class="d-flex justify-right align-right" style="margin-top:24px">Ok</MudButton>
+        </div>
+    </MudDrawer>
+
+
+    <MudDataGrid T="Device" Items="@HardwaresList" RowClick="@RowClicked" Bordered="true">
+        <Columns>
+            <Column T="Device" Field="Id" />
+            <Column T="Device" Field="Name" Title="Hardware name" />
+        </Columns>
+    </MudDataGrid>
+
+
+</MudDrawerContainer>
+
+
+
+@code
+{
+    public string? SelectedTitle { get; set; }
+
+    private IEnumerable<Device> HardwaresList = new List<Device>();
+
+    private IEnumerable<InterfaceSpecs> SpecsList = new List<InterfaceSpecs>();
+
+    protected override Task OnInitializedAsync()
+    {
+        DeviceModel e1214 = new DeviceModel()
+        {
+            Specs = new List<InterfaceSpecs>()
+            {
+                new InterfaceSpecs() { Type = ioInterfaceType.DigitalInputChannels,  Count = 6 },
+                new InterfaceSpecs() { Type = ioInterfaceType.RelayChannels,  Count = 6 }
+            }
+        };
+
+        HardwaresList = new List<Device>()
+        {
+            new Device() {
+                Id = 1,
+                Name = "Panou intrare",
+                Model = e1214
+            }, 
+            new Device()
+            {
+                Id = 2,
+                Name = "Panou iesire",
+                Model = e1214
+            }
+        };
+
+        return Task.CompletedTask;
+    }
+
+    bool openRight = false;
+    void ToggleRightDrawer()
+    {
+        openRight = !openRight;
+    }
+
+    // events
+    void RowClicked(DataGridRowClickEventArgs<Device> args)
+    {
+        // _events.Insert(0, $"Event = RowClick, Index = {args.RowIndex}, Data = {System.Text.Json.JsonSerializer.Serialize(args.Item)}");
+
+        SelectedTitle = args.Item.Name;
+        SpecsList = args.Item.Model.Specs;
+        openRight = true;
+    }
+
+    void SaveNewData()
+    {
+        openRight = false;
+    }
+
+}
