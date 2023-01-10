@@ -26,7 +26,8 @@
     <MudDataGrid T="Device" Items="@HardwaresList" RowClick="@RowClicked" Bordered="true">
         <Columns>
             <Column T="Device" Field="Id" />
-            <Column T="Device" Field="Name" Title="Hardware name" />
+            <Column T="Device" Field="Name" Title="Device name" />
+           @* <Column T="Device" Field="Model?.Name" Title="Device model" />*@
         </Columns>
     </MudDataGrid>
 
@@ -47,6 +48,7 @@
     {
         DeviceModel e1214 = new DeviceModel()
         {
+            Name = "e1214",
             Specs = new List<InterfaceSpecs>()
             {
                 new InterfaceSpecs() { Type = ioInterfaceType.DigitalInputChannels,  Count = 6 },

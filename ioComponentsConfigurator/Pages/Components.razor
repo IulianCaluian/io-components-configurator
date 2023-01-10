@@ -1,7 +1,93 @@
 ﻿@page "/components"
+@using ioComponentsConfigurator.Models;
 
 <h3>Components</h3>
 
-@code {
+<MudDrawerContainer Class="mud-height-full">
+
+    <MudDrawer @bind-Open="@openRight" Fixed="false" Anchor="Anchor.Right" Elevation="1" Variant="@DrawerVariant.Persistent" Width="calc((100% - 250px) / 2)">
+        <div style="padding:12px">
+            <h2 style="padding:12px">@SelectedTitle</h2>
+
+            <MudDataGrid T="ComponentPart" Items="@ComponentParts" Bordered="true">
+                <Columns>
+                    <Column T="ComponentPart" Field="Name" />
+                    <Column T="ComponentPart" Field="Type" />
+                    <Column T="ComponentPart" Field="DeviceId" />
+                    <Column T="ComponentPart" Field="Index" />
+                </Columns>
+            </MudDataGrid>
+
+            <MudButton OnClick="@SaveNewData" class="d-flex justify-right align-right" style="margin-top:24px">Ok</MudButton>
+        </div>
+    </MudDrawer>
+
+
+    <MudDataGrid T="Component" Items="@ComponentsList" RowClick="@RowClicked" Bordered="true">
+        <Columns>
+            <Column T="Component" Field="Id" />
+            <Column T="Component" Field="Name" Title="Component name" />
+        </Columns>
+    </MudDataGrid>
+
+
+</MudDrawerContainer>
+
+
+
+@code
+{
+    public string? SelectedTitle { get; set; }
+
+    private IEnumerable<Component> ComponentsList = new List<Component>();
+
+    private IEnumerable<ComponentPart>? ComponentParts = new List<ComponentPart>();
+
+    protected override Task OnInitializedAsync()
+    {
+        ComponentsList = new List<Component>()
+        {
+            new Component() {
+                Id = 1,
+                Name = "Bariera intrare",
+                Parts = new List<ComponentPart>()
+                {
+                    new ComponentPart() { Name = "Senzor", Type = ioInterfaceType.DigitalInputChannels, DeviceId = 4, Index = 0}
+                }
+            },
+            new Component() {
+                Id = 2,
+                Name = "Usa",
+                          Parts = new List<ComponentPart>()
+                {
+                    new ComponentPart() { Name = "Senzor", Type = ioInterfaceType.DigitalInputChannels, DeviceId = 4, Index = 0},
+                    new ComponentPart() { Name = "Lock", Type = ioInterfaceType.RelayChannels, DeviceId = 4, Index = 0}
+                }
+            }
+        };
+
+        return Task.CompletedTask;
+    }
+
+    bool openRight = false;
+    void ToggleRightDrawer()
+    {
+        openRight = !openRight;
+    }
+
+    // events
+    void RowClicked(DataGridRowClickEventArgs<Component> args)
+    {
+        // _events.Insert(0, $"Event = RowClick, Index = {args.RowIndex}, Data = {System.Text.Json.JsonSerializer.Serialize(args.Item)}");
+
+        SelectedTitle = args.Item.Name;
+        ComponentParts = args.Item.Parts;
+        openRight = true;
+    }
+
+    void SaveNewData()
+    {
+        openRight = false;
+    }
 
 }
