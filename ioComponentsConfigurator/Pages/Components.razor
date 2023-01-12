@@ -1,5 +1,10 @@
 ﻿@page "/components"
+@using System.Collections.ObjectModel;
 @using ioComponentsConfigurator.Models;
+@using ioComponentsConfigurator.Repositories;
+
+@inject ComponentsRepository _componentsRepository
+@inject IDialogService DialogService
 
 <style>
     body {
@@ -35,10 +40,13 @@
     </MudDrawer>
 
 
-    <MudTable T="Component" Items="@ComponentsList" OnRowClick="@RowClicked" B Bordered="true" style="margin:24px">
+    <MudTable T="Component" Items="@ComponentsList" OnRowClick="@RowClicked" Bordered="true" style="margin:24px">
 
         <ToolBarContent>
             <MudText Typo="Typo.h6">Components</MudText>
+            <MudSpacer />
+            <MudIconButton Icon="@Icons.Material.Filled.Add" aria-label="add" @onclick="OpenDialog"></MudIconButton>
+            <MudIconButton Icon="@Icons.Material.Filled.AddAlarm" aria-label="add" @onclick="AddAlarm"></MudIconButton>
         </ToolBarContent>
 
         <ColGroup>
@@ -67,32 +75,15 @@
 {
     public string? SelectedTitle { get; set; }
 
-    private IEnumerable<Component> ComponentsList = new List<Component>();
+    private ObservableCollection<Component> ComponentsList = new ObservableCollection<Component>();
 
     private IEnumerable<ComponentPart>? ComponentParts = new List<ComponentPart>();
 
-    protected override Task OnInitializedAsync()
+    protected override  Task OnInitializedAsync()
     {
-        ComponentsList = new List<Component>()
-        {
-            new Component() {
-                Id = 1,
-                Name = "Bariera intrare",
-                Parts = new List<ComponentPart>()
-                {
-                    new ComponentPart() { Name = "Senzor", Type = ioInterfaceType.DigitalInputChannels, DeviceId = 4, Index = 0}
-                }
-            },
-            new Component() {
-                Id = 2,
-                Name = "Usa",
-                          Parts = new List<ComponentPart>()
-                {
-                    new ComponentPart() { Name = "Senzor", Type = ioInterfaceType.DigitalInputChannels, DeviceId = 4, Index = 0},
-                    new ComponentPart() { Name = "Lock", Type = ioInterfaceType.RelayChannels, DeviceId = 4, Index = 0}
-                }
-            }
-        };
+        var list = _componentsRepository.GetAllComponents();
+
+        ComponentsList = new ObservableCollection<Component>(list);
 
         return Task.CompletedTask;
     }
@@ -117,5 +108,35 @@
     {
         openRight = false;
     }
+
+
+    private async Task OpenDialog()
+    {
+        var options = new DialogOptions { CloseOnEscapeKey = true };
+
+        var dialog = DialogService.Show<AddComponentDialog>("Simple Dialog", options);
+
+        var result = await dialog.Result;
+
+        if (!result.Canceled)
+        {
+            //In a real world scenario we would reload the data from the source here since we "removed" it in the dialog already.
+
+            Component component = (Component)result.Data;
+            ComponentsList.Add(component);
+        }
+
+        ComponentsList.Add(new Component() { Name = "bla" });
+
+    }
+
+    private  void AddAlarm()
+    {
+     
+
+        ComponentsList.Add(new Component() { Name = "alarm" });
+
+    }
+
 
 }

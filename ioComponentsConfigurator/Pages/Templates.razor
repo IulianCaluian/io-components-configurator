@@ -1,8 +1,9 @@
 ﻿@page "/templates"
 @using System.Net.Http.Json
 @using ioComponentsConfigurator.Models;
+@using ioComponentsConfigurator.Repositories;
 
-<h3>Templates</h3>
+@inject ComponentsRepository _componentsRepository
 
 <MudDrawerContainer Class="mud-height-full">
 
@@ -44,28 +45,7 @@
 
     protected override Task OnInitializedAsync()
     {
-        TemplatesList = new List<Template>()
-        {
-            new Template() { 
-                Id = 1, 
-                Name = "Bariera tip 1",
-                Properties = new List<TemplateProperty>()
-                {
-                    new TemplateProperty() { Name = "Senzor bariera" , InterfaceType = ioInterfaceType.DigitalInputChannels }
-                }
-            },
-            new Template() { 
-                Id = 2, 
-                Name = "Usa",
-                Properties = new List<TemplateProperty>()
-                {
-                    new TemplateProperty() { Name = "Contact" , InterfaceType = ioInterfaceType.DigitalInputChannels },
-                    new TemplateProperty() { Name = "Lock" , InterfaceType = ioInterfaceType.RelayChannels }
-                }
-            },
-            new Template() { Id = 3, Name = "Bariera tip 2" },
-            new Template() { Id = 4, Name = "Poarta mecanica" }
-        };
+        TemplatesList = _componentsRepository.GetAllTemplates();
 
         return Task.CompletedTask;
     }

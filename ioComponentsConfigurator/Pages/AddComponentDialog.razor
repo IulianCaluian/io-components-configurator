@@ -1,0 +1,102 @@
+﻿@using System.Collections.ObjectModel;
+@using ioComponentsConfigurator.Models;
+
+@inject ISnackbar Snackbar
+
+<MudDialog>
+    <TitleContent>
+        <MudText Typo="Typo.h6">
+            New component
+        </MudText>
+    </TitleContent>
+    <DialogContent>
+        <MudTextField @bind-Value=Comp.Name Label="Component name"/>
+
+        <MudSelect T="string" ValueChanged="TemplateValueChanged" Label="Coffee" AnchorOrigin="Origin.BottomCenter">
+            <MudSelectItem Value="@("Cappuccino")" />
+            <MudSelectItem Value="@("Cafe Latte")" />
+            <MudSelectItem Value="@("Espresso")" />
+        </MudSelect>
+
+        <MudTable T="ComponentPart" Items="@ComponentPartsList">
+            <RowTemplate>
+                <MudTd>
+                    <MudStack Row="true" Class="align-baseline">
+
+                        <MudText>@context.Name (digital input)</MudText>
+
+                        <MudSelect T="string" Label="Panel" AnchorOrigin="Origin.BottomCenter">
+                            <MudSelectItem Value="@("Panou intrare")" />
+                            <MudSelectItem Value="@("Panou iesire")" />
+                        </MudSelect>
+
+                        <MudSelect T="int" Label="Index" AnchorOrigin="Origin.BottomCenter" Style="width:80px">
+                            <MudSelectItem Value="@(1)" />
+                            <MudSelectItem Value="@(2)" />
+                            <MudSelectItem Value="@(3)" />
+                            <MudSelectItem Value="@(4)" />
+                            <MudSelectItem Value="@(5)" />
+                            <MudSelectItem Value="@(6)" />
+                        </MudSelect>
+                    </MudStack>
+                </MudTd>
+           </RowTemplate>
+        </MudTable>
+ 
+
+ 
+
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Cancel</MudButton>
+        <MudButton Color="Color.Primary" OnClick="DeleteServer">Add component</MudButton>
+    </DialogActions>
+</MudDialog>
+@code {
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+
+    private ObservableCollection<ComponentPart> ComponentPartsList = new ObservableCollection<ComponentPart>(); 
+
+    public Component Comp { get; set; } = new Component();
+
+    private void Cancel()
+    {
+        MudDialog.Cancel();
+    }
+
+    private void DeleteServer()
+    {
+        //In a real world scenario this bool would probably be a service to delete the item from api/database
+        Snackbar.Add("Component added", Severity.Success);
+
+        MudDialog.Close(DialogResult.Ok(Comp));
+    }
+
+
+    void TemplateValueChanged(string args)
+    {
+        // _events.Insert(0, $"Event = RowClick, Index = {args.RowIndex}, Data = {System.Text.Json.JsonSerializer.Serialize(args.Item)}");
+
+        if (args.Equals("Cappuccino"))
+        {
+            List<ComponentPart> ps = new List<ComponentPart>()
+            {
+                new ComponentPart() {Name = "test-part"}
+            };
+
+            ComponentPartsList = new ObservableCollection<ComponentPart>(ps);
+        } else if (args.Equals("Cafe Latte"))
+        {
+            List<ComponentPart> ps = new List<ComponentPart>()
+            {
+                new ComponentPart() {Name = "late"}
+            };
+
+            ComponentPartsList = new ObservableCollection<ComponentPart>(ps);
+        } else
+        {
+            ComponentPartsList.Clear();
+        }
+    }
+}
+
