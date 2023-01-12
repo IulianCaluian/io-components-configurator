@@ -1,19 +1,32 @@
 ﻿@page "/devices"
 
+<style>
+    body {
+        background-color: #e8e8e8;
+    }
+
+    article[b-xugrhhbrxv] {
+        padding: 0px !important
+    }
+
+    .top-row[b-xugrhhbrxv] {
+        z-index: 1101
+    }
+</style>
+
 @using System.Net.Http.Json
 @using ioComponentsConfigurator.Models;
 
-<h3>Hardware</h3>
 
-<MudDrawerContainer Class="mud-height-full">
+<MudDrawerContainer Class="mud-height-full ">
 
-    <MudDrawer @bind-Open="@openRight" Fixed="false" Anchor="Anchor.Right" Elevation="1" Variant="@DrawerVariant.Persistent" Width="calc((100% - 250px) / 2)">
+    <MudDrawer @bind-Open="@openRight" Fixed="false" Anchor="Anchor.Right" Elevation="4" Variant="@DrawerVariant.Persistent" Width="calc((100% - 250px) / 2)" Style="margin:-24px">
         <div style="padding:12px">
             <h2 style="padding:12px">@SelectedTitle</h2>
 
             <MudDataGrid T="InterfaceSpecs" Items="@SpecsList" Bordered="true">
                 <Columns>
-                    <Column T="InterfaceSpecs" Field="Type" />
+                    <Column  Resizable=true style="width:100px" T="InterfaceSpecs" Field="Type" />
                     <Column T="InterfaceSpecs" Field="Count" Title="Type" />
                 </Columns>
             </MudDataGrid>
@@ -23,16 +36,32 @@
     </MudDrawer>
 
 
-    <MudDataGrid T="Device" Items="@HardwaresList" RowClick="@RowClicked" Bordered="true">
-        <Columns>
-            <Column T="Device" Field="Id" />
-            <Column T="Device" Field="Name" Title="Device name" />
-           @* <Column T="Device" Field="Model?.Name" Title="Device model" />*@
-        </Columns>
-    </MudDataGrid>
+    <MudTable T="Device" Items="@HardwaresList" OnRowClick="@RowClicked" Bordered="true" style="margin:24px">
+
+        <ToolBarContent>
+            <MudText Typo="Typo.h6">Hardware</MudText>
+        </ToolBarContent>
+
+        <ColGroup>
+            <col style="width: 200px;" />
+            <col />
+        </ColGroup>
+
+        <HeaderContent>
+            <MudTh>Id</MudTh>
+            <MudTh>Device name</MudTh>
+        </HeaderContent>
+
+        <RowTemplate>
+            <MudTd DataLabel="Nr">@context.Id</MudTd>
+            <MudTd DataLabel="Sign">@context.Name</MudTd>
+        </RowTemplate>
+
+    </MudTable>
 
 
 </MudDrawerContainer>
+
 
 
 
@@ -43,6 +72,18 @@
     private IEnumerable<Device> HardwaresList = new List<Device>();
 
     private IEnumerable<InterfaceSpecs> SpecsList = new List<InterfaceSpecs>();
+
+    private IEnumerable<Element> Elements = new List<Element>()
+    {
+        new Element() { Number = 1, Sign = "H"  },
+        new Element() { Number = 2, Sign = "He"},
+        new Element() { Number = 3, Sign = "Li" }
+    };
+
+    public class Element {
+        public int Number { get; set; }
+        public string Sign { get; set; }
+    }
 
     protected override Task OnInitializedAsync()
     {
@@ -81,7 +122,7 @@
     }
 
     // events
-    void RowClicked(DataGridRowClickEventArgs<Device> args)
+    void RowClicked(TableRowClickEventArgs<Device> args)
     {
         // _events.Insert(0, $"Event = RowClick, Index = {args.RowIndex}, Data = {System.Text.Json.JsonSerializer.Serialize(args.Item)}");
 
@@ -89,6 +130,7 @@
         SpecsList = args.Item.Model.Specs;
         openRight = true;
     }
+
 
     void SaveNewData()
     {

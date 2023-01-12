@@ -1,11 +1,23 @@
 ﻿@page "/components"
 @using ioComponentsConfigurator.Models;
 
-<h3>Components</h3>
+<style>
+    body {
+        background-color: #e8e8e8;
+    }
+
+    article[b-xugrhhbrxv] {
+        padding: 0px !important
+    }
+
+    .top-row[b-xugrhhbrxv] {
+        z-index: 1101
+    }
+</style>
 
 <MudDrawerContainer Class="mud-height-full">
 
-    <MudDrawer @bind-Open="@openRight" Fixed="false" Anchor="Anchor.Right" Elevation="1" Variant="@DrawerVariant.Persistent" Width="calc((100% - 250px) / 2)">
+    <MudDrawer @bind-Open="@openRight" Fixed="false" Anchor="Anchor.Right" Elevation="1" Variant="@DrawerVariant.Persistent" Width="calc((100% - 250px) / 2)" Style="margin:-24px">
         <div style="padding:12px">
             <h2 style="padding:12px">@SelectedTitle</h2>
 
@@ -23,12 +35,28 @@
     </MudDrawer>
 
 
-    <MudDataGrid T="Component" Items="@ComponentsList" RowClick="@RowClicked" Bordered="true">
-        <Columns>
-            <Column T="Component" Field="Id" />
-            <Column T="Component" Field="Name" Title="Component name" />
-        </Columns>
-    </MudDataGrid>
+    <MudTable T="Component" Items="@ComponentsList" OnRowClick="@RowClicked" B Bordered="true" style="margin:24px">
+
+        <ToolBarContent>
+            <MudText Typo="Typo.h6">Components</MudText>
+        </ToolBarContent>
+
+        <ColGroup>
+            <col style="width: 200px;" />
+            <col />
+        </ColGroup>
+
+        <HeaderContent>
+            <MudTh>Id</MudTh>
+            <MudTh>Name</MudTh>
+        </HeaderContent>
+
+        <RowTemplate>
+            <MudTd DataLabel="Nr">@context.Id</MudTd>
+            <MudTd DataLabel="Sign">@context.Name</MudTd>
+        </RowTemplate>
+
+    </MudTable>
 
 
 </MudDrawerContainer>
@@ -76,7 +104,7 @@
     }
 
     // events
-    void RowClicked(DataGridRowClickEventArgs<Component> args)
+    void RowClicked(TableRowClickEventArgs<Component> args)
     {
         // _events.Insert(0, $"Event = RowClick, Index = {args.RowIndex}, Data = {System.Text.Json.JsonSerializer.Serialize(args.Item)}");
 
