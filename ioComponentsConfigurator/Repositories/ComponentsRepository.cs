@@ -1,11 +1,24 @@
 ﻿using ioComponentsConfigurator.Models;
 using System.IO;
+using System.Reflection;
 using System.Xml.Linq;
 
 namespace ioComponentsConfigurator.Repositories
 {
     public class ComponentsRepository
     {
+        private static DeviceModel e1214 = new DeviceModel()
+        {
+            Name = "e1214",
+            Specs = new List<InterfaceSpecs>()
+            {
+                new InterfaceSpecs() { Type = ioInterfaceType.DigitalInputChannels,  Count = 6 },
+                new InterfaceSpecs() { Type = ioInterfaceType.RelayChannels,  Count = 6 }
+            }
+        };
+
+
+
         private List<Component> _componentsList  = new List<Component>()
         {
             new Component()
@@ -54,7 +67,42 @@ namespace ioComponentsConfigurator.Repositories
             new Template() { Id = 4, Name = "Poarta mecanica" }
             };
 
-        public List<Component> GetAllComponents()
+
+
+       private List<Device> HardwaresList = new List<Device>()
+        {
+            new Device()
+        {
+            Id = 1,
+                Name = "Panou intrare",
+                Model = e1214
+            }, 
+            new Device()
+        {
+            Id = 2,
+                Name = "Panou iesire",
+                Model = e1214
+            }
+    };
+
+    private List<Device> _deviceList = new List<Device>()
+        {
+            new Device()
+        {
+            Id = 1,
+                Name = "Panou intrare",
+                Model = e1214
+            }, 
+            new Device()
+        {
+            Id = 2,
+                Name = "Panou iesire",
+                Model = e1214
+            }
+    };
+
+
+    public List<Component> GetAllComponents()
         {
             return _componentsList;
         }
@@ -62,6 +110,11 @@ namespace ioComponentsConfigurator.Repositories
         public List<Template> GetAllTemplates()
         {
             return _templatesList;
+        }
+
+        public List<Device> GetAllDevices()
+        {
+            return _deviceList;
         }
     }
 }

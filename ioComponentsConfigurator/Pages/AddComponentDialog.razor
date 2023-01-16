@@ -1,6 +1,8 @@
 ﻿@using System.Collections.ObjectModel;
 @using ioComponentsConfigurator.Models;
+@using ioComponentsConfigurator.Repositories;
 
+@inject ComponentsRepository _componentsRepository
 @inject ISnackbar Snackbar
 
 <MudDialog>
@@ -12,25 +14,28 @@
     <DialogContent>
         <MudTextField @bind-Value=Comp.Name Label="Component name"/>
 
-        <MudSelect T="string" ValueChanged="TemplateValueChanged" Label="Coffee" AnchorOrigin="Origin.BottomCenter">
-            <MudSelectItem Value="@("Cappuccino")" />
-            <MudSelectItem Value="@("Cafe Latte")" />
-            <MudSelectItem Value="@("Espresso")" />
+        <MudSelect T="string" ValueChanged="TemplateValueChanged" Label="Template" AnchorOrigin="Origin.BottomCenter">
+                @foreach (var state in templatesStrings)
+                {
+                    <MudSelectItem Value="@state" />
+                }
         </MudSelect>
 
-        <MudTable T="ComponentPart" Items="@ComponentPartsList">
+        <MudTable T="ComponentPartWithDevice" Items="@ComponentPartsList">
             <RowTemplate>
                 <MudTd>
                     <MudStack Row="true" Class="align-baseline">
 
-                        <MudText>@context.Name (digital input)</MudText>
+                        <MudText>@context.Name (@context.Type)</MudText>
 
-                        <MudSelect T="string" Label="Panel" AnchorOrigin="Origin.BottomCenter">
-                            <MudSelectItem Value="@("Panou intrare")" />
-                            <MudSelectItem Value="@("Panou iesire")" />
+                        <MudSelect T="Device" @bind-Value="@context.Device" ToStringFunc="@converterOfDeviceToString" Label="Panel" AnchorOrigin="Origin.BottomCenter">
+                            @foreach (var device in devices)
+                            {
+                                <MudSelectItem Value="@device" />
+                            }        
                         </MudSelect>
 
-                        <MudSelect T="int" Label="Index" AnchorOrigin="Origin.BottomCenter" Style="width:80px">
+                        <MudSelect T="int" Label="Index" @bind-Value="@context.Index" AnchorOrigin="Origin.BottomCenter" Style="width:80px">
                             <MudSelectItem Value="@(1)" />
                             <MudSelectItem Value="@(2)" />
                             <MudSelectItem Value="@(3)" />
@@ -49,26 +54,61 @@
     </DialogContent>
     <DialogActions>
         <MudButton OnClick="Cancel">Cancel</MudButton>
-        <MudButton Color="Color.Primary" OnClick="DeleteServer">Add component</MudButton>
+        <MudButton Color="Color.Primary" OnClick="AddComponentCommand">Add component</MudButton>
     </DialogActions>
 </MudDialog>
+
+
 @code {
     [CascadingParameter] MudDialogInstance MudDialog { get; set; }
 
-    private ObservableCollection<ComponentPart> ComponentPartsList = new ObservableCollection<ComponentPart>(); 
 
-    public Component Comp { get; set; } = new Component();
+
+    private IEnumerable<string> templatesStrings { get; set; }
+
+    private List<Template> templates { get; set; }
+
+    private List<Device> devices { get; set; }
+
+    private ObservableCollection<ComponentPartWithDevice> ComponentPartsList;
+
+    public Component Comp { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        templates = _componentsRepository.GetAllTemplates();
+        templatesStrings = templates.Select(x => x.Name);
+
+        devices = _componentsRepository.GetAllDevices();
+
+        Comp = new Component();
+        ComponentPartsList = new ObservableCollection<ComponentPartWithDevice>();
+    }
 
     private void Cancel()
     {
         MudDialog.Cancel();
     }
 
-    private void DeleteServer()
+    private void AddComponentCommand()
     {
         //In a real world scenario this bool would probably be a service to delete the item from api/database
         Snackbar.Add("Component added", Severity.Success);
 
+        List<ComponentPart> lcp = new List<ComponentPart>();
+
+        foreach(var cpd in ComponentPartsList)
+        {
+            lcp.Add(new ComponentPart()
+                {
+                    Name = cpd.Name,
+                    DeviceId = cpd.Device.Id,
+                    Type = cpd.Type,
+                    Index = cpd.Index
+                });
+        }
+
+        Comp.Parts = lcp;
         MudDialog.Close(DialogResult.Ok(Comp));
     }
 
@@ -77,26 +117,33 @@
     {
         // _events.Insert(0, $"Event = RowClick, Index = {args.RowIndex}, Data = {System.Text.Json.JsonSerializer.Serialize(args.Item)}");
 
-        if (args.Equals("Cappuccino"))
-        {
-            List<ComponentPart> ps = new List<ComponentPart>()
-            {
-                new ComponentPart() {Name = "test-part"}
-            };
+        Template? firstTemplate = templates.Where(x => x.Name.Equals(args)).FirstOrDefault();
 
-            ComponentPartsList = new ObservableCollection<ComponentPart>(ps);
-        } else if (args.Equals("Cafe Latte"))
-        {
-            List<ComponentPart> ps = new List<ComponentPart>()
-            {
-                new ComponentPart() {Name = "late"}
-            };
-
-            ComponentPartsList = new ObservableCollection<ComponentPart>(ps);
-        } else
-        {
+        if (firstTemplate == null) {
             ComponentPartsList.Clear();
+            return;
         }
+
+        List<ComponentPartWithDevice> ps = new List<ComponentPartWithDevice>();
+
+        foreach (var tempProp in firstTemplate.Properties)
+            ps.Add(new ComponentPartWithDevice() { Name = tempProp.Name, Type = tempProp.InterfaceType });
+
+        ComponentPartsList = new ObservableCollection<ComponentPartWithDevice>(ps);
+
+   
+
+    }
+
+    Func<Device, string> converterOfDeviceToString = p => p?.Name;
+
+    public class ComponentPartWithDevice
+    {
+        public string? Name { get; set; }
+        public Device? Device { get; set; }
+        public ioInterfaceType? Type { get; set; }
+        public int Index { get; set; }
+
     }
 }
 

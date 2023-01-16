@@ -1,5 +1,7 @@
 ﻿@page "/devices"
 
+@inject ComponentsRepository _componentsRepository
+
 <style>
     body {
         background-color: #e8e8e8;
@@ -15,7 +17,9 @@
 </style>
 
 @using System.Net.Http.Json
+@using System.Collections.ObjectModel;
 @using ioComponentsConfigurator.Models;
+@using ioComponentsConfigurator.Repositories;
 
 
 <MudDrawerContainer Class="mud-height-full ">
@@ -69,7 +73,7 @@
 {
     public string? SelectedTitle { get; set; }
 
-    private IEnumerable<Device> HardwaresList = new List<Device>();
+    private ObservableCollection<Device> HardwaresList = new ObservableCollection<Device>();
 
     private IEnumerable<InterfaceSpecs> SpecsList = new List<InterfaceSpecs>();
 
@@ -87,30 +91,9 @@
 
     protected override Task OnInitializedAsync()
     {
-        DeviceModel e1214 = new DeviceModel()
-        {
-            Name = "e1214",
-            Specs = new List<InterfaceSpecs>()
-            {
-                new InterfaceSpecs() { Type = ioInterfaceType.DigitalInputChannels,  Count = 6 },
-                new InterfaceSpecs() { Type = ioInterfaceType.RelayChannels,  Count = 6 }
-            }
-        };
+        var list = _componentsRepository.GetAllDevices();
 
-        HardwaresList = new List<Device>()
-        {
-            new Device() {
-                Id = 1,
-                Name = "Panou intrare",
-                Model = e1214
-            }, 
-            new Device()
-            {
-                Id = 2,
-                Name = "Panou iesire",
-                Model = e1214
-            }
-        };
+        HardwaresList = new ObservableCollection<Device>(list);
 
         return Task.CompletedTask;
     }
